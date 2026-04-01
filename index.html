@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PotenMap — 당신의 포텐을 지도로 그려드립니다</title>
+  <meta name="description" content="조언도, 결정도 없습니다. 당신 안에 이미 있는 것들을 체계적으로 꺼내어 지도로 그려드립니다." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #07090f;
+      --bg2: #0d1120;
+      --grid: rgba(255,255,255,0.03);
+      --accent: #c9a84c;
+      --accent2: #e8c97a;
+      --text: #e8e6df;
+      --text-muted: #7a7870;
+      --text-dim: #4a4840;
+      --border: rgba(201,168,76,0.15);
+      --border-dim: rgba(255,255,255,0.05);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Noto Sans KR', sans-serif;
+      font-weight: 300;
+      line-height: 1.8;
+      overflow-x: hidden;
+    }
+
+    /* GRID BACKGROUND */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* NOISE OVERLAY */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    section, nav, footer { position: relative; z-index: 1; }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.4rem 4rem;
+      background: rgba(7,9,15,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 6rem;
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.25em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.2s forwards;
+    }
+
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 10vw, 9rem);
+      letter-spacing: 0.06em;
+      line-height: 0.95;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.4s forwards;
+    }
+
+    .hero-title span { color: var(--accent); }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      color: var(--text-muted);
+      max-width: 560px;
+      margin: 0 auto 1.5rem;
+      font-weight: 300;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.6s forwards;
+    }
+
+    .hero-divider {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+      margin: 0 auto 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.8s forwards;
+    }
+
+    .hero-tagline {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+      opacity: 0;
+      animation: fadeUp 0.8s 1s forwards;
+    }
+
+    .hero-tagline strong { color: var(--accent); font-weight: 500; }
+
+    .hero-cta {
+      margin-top: 3.5rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.8s 1.2s forwards;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      padding: 0.9rem 2.4rem;
+      background: var(--accent);
+      color: #07090f;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent2);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      display: inline-block;
+      padding: 0.9rem 2.4rem;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* SECTION BASE */
+    .section {
+      padding: 7rem 4rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.3em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+    }
+
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      letter-spacing: 0.05em;
+      line-height: 1;
+      color: var(--text);
+      margin-bottom: 1.5rem;
+    }
+
+    .section-body {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      max-width: 620px;
+      line-height: 1.9;
+    }
+
+    /* DIVIDER LINE */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: var(--border-dim);
+      margin: 0;
+    }
+
+    /* PHILOSOPHY */
+    .philosophy {
+      background: var(--bg2);
+      border-top: 1px solid var(--border-dim);
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    .philosophy-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 7rem 4rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+    }
+
+    .philosophy-quote {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      letter-spacing: 0.04em;
+      line-height: 1.2;
+      color: var(--text);
+    }
+
+    .philosophy-quote span { color: var(--accent); }
+
+    .philosophy-text {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 2;
+    }
+
+    .philosophy-text p + p { margin-top: 1.2rem; }
+
+    /* SERVICES */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--border-dim);
+      border: 1px solid var(--border-dim);
+      margin-top: 4rem;
+    }
+
+    .service-card {
+      background: var(--bg);
+      padding: 2.8rem;
+      position: relative;
+      transition: background 0.3s;
+    }
+
+    .service-card:hover { background: var(--bg2); }
+
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px;
+      height: 0;
+      background: var(--accent);
+      transition: height 0.4s ease;
+    }
+
+    .service-card:hover::before { height: 100%; }
+
+    .service-num {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      color: var(--text-dim);
+      margin-bottom: 1rem;
+    }
+
+    .service-target {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+    }
+
+    .service-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.9rem;
+      letter-spacing: 0.06em;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+
+    .service-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.85;
+      margin-bottom: 1.5rem;
+    }
+
+    .service-price {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+    }
+
+    /* NOT THIS */
+    .not-section {
+      background: var(--bg2);
+      border-top: 1px solid var(--border-dim);
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    .not-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 7rem 4rem;
+    }
+
+    .not-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      margin-top: 3.5rem;
+    }
+
+    .not-item {
+      border: 1px solid var(--border-dim);
+      padding: 1.8rem;
+    }
+
+    .not-icon {
+      font-size: 1.2rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .not-title {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .not-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
+    /* PROCESS */
+    .process-steps {
+      margin-top: 4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--border-dim);
+    }
+
+    .process-step {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      border-bottom: 1px solid var(--border-dim);
+      transition: background 0.3s;
+    }
+
+    .process-step:last-child { border-bottom: none; }
+    .process-step:hover { background: var(--bg2); }
+
+    .step-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.4rem;
+      color: var(--text-dim);
+      border-right: 1px solid var(--border-dim);
+      padding: 2rem;
+      transition: color 0.3s;
+    }
+
+    .process-step:hover .step-num { color: var(--accent); }
+
+    .step-content {
+      padding: 2rem 2.4rem;
+    }
+
+    .step-title {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+
+    .step-desc {
+      font-size: 0.83rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
+    /* TRINITY */
+    .trinity-section {
+      background: var(--bg2);
+      border-top: 1px solid var(--border-dim);
+      border-bottom: 1px solid var(--border-dim);
+    }
+
+    .trinity-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 7rem 4rem;
+    }
+
+    .trinity-stat {
+      display: flex;
+      gap: 1px;
+      background: var(--border-dim);
+      border: 1px solid var(--border-dim);
+      margin-top: 4rem;
+    }
+
+    .trinity-stat-item {
+      flex: 1;
+      background: var(--bg);
+      padding: 2.4rem 2rem;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+      display: block;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      margin-top: 0.3rem;
+    }
+
+    .trinity-note {
+      margin-top: 2rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-align: center;
+      letter-spacing: 0.08em;
+    }
+
+    /* CONTACT */
+    .contact-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 7rem 4rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: start;
+    }
+
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .form-input, .form-select, .form-textarea {
+      background: var(--bg2);
+      border: 1px solid var(--border-dim);
+      color: var(--text);
+      padding: 0.85rem 1rem;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 300;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .form-select {
+      appearance: none;
+      cursor: pointer;
+    }
+
+    .form-textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .contact-info {
+      padding-top: 0.5rem;
+    }
+
+    .contact-detail {
+      margin-bottom: 2rem;
+    }
+
+    .contact-detail-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+
+    .contact-detail-value {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .contact-detail-value a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .contact-detail-value a:hover { color: var(--accent); }
+
+    /* NOTICE BOX */
+    .notice-box {
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      margin-top: 3rem;
+      background: rgba(201,168,76,0.03);
+    }
+
+    .notice-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.2em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 0.8rem;
+    }
+
+    .notice-text {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      line-height: 1.85;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border-dim);
+      padding: 3rem 4rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+    }
+
+    .footer-info {
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      line-height: 1.8;
+      text-align: right;
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      nav { padding: 1.2rem 1.5rem; }
+      .nav-links { display: none; }
+      .section { padding: 5rem 1.5rem; }
+      .philosophy-inner { grid-template-columns: 1fr; gap: 3rem; padding: 5rem 1.5rem; }
+      .services-grid { grid-template-columns: 1fr; }
+      .not-grid { grid-template-columns: 1fr; }
+      .contact-inner { grid-template-columns: 1fr; gap: 3rem; padding: 5rem 1.5rem; }
+      .trinity-inner { padding: 5rem 1.5rem; }
+      .not-inner { padding: 5rem 1.5rem; }
+      .trinity-stat { flex-direction: column; }
+      footer { padding: 2.5rem 1.5rem; flex-direction: column; align-items: flex-start; }
+      .footer-info { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-logo" href="#">PotenMap</a>
+    <ul class="nav-links">
+      <li><a href="#services">서비스</a></li>
+      <li><a href="#how">진행 방식</a></li>
+      <li><a href="#about">소개</a></li>
+      <li><a href="#contact">문의</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <p class="hero-eyebrow">Personal Development · Korea</p>
+    <h1 class="hero-title">POTEN<span>MAP</span></h1>
+    <p class="hero-sub">
+      당신 안에 이미 있는 것들을<br>체계적으로 꺼내어 지도로 그려드립니다
+    </p>
+    <div class="hero-divider"></div>
+    <p class="hero-tagline">
+      <strong>No advice. No decisions.</strong>&nbsp;&nbsp;Just your blueprint, finally visible.
+    </p>
+    <div class="hero-cta">
+      <a href="#services" class="btn-primary">서비스 보기</a>
+      <a href="#contact" class="btn-secondary">지금 문의하기</a>
+    </div>
+  </section>
+
+  <!-- PHILOSOPHY -->
+  <div class="philosophy">
+    <div class="philosophy-inner reveal">
+      <div class="philosophy-quote">
+        결정은<br>당신이 합니다.<br>
+        우리는 오직<br><span>지도</span>를<br>그릴 뿐입니다.
+      </div>
+      <div class="philosophy-text">
+        <p>
+          PotenMap은 조언하지 않습니다. 방향을 제시하지도 않습니다.
+          세상에는 이미 당신에게 무엇을 해야 한다고 말하는 서비스가 넘쳐납니다.
+        </p>
+        <p>
+          우리는 다릅니다. 당신이 이미 가지고 있는 것들 — 강점, 패턴, 포텐 — 을
+          체계적으로 꺼내어 구조화된 지도로 만들어드립니다.
+        </p>
+        <p>
+          바텀업(Bottom-up) 방식으로, 당신의 실제 경험과 역사에서 시작하여
+          층층이 쌓아 올라갑니다. 그 결과는 우리의 해석이 아닌,
+          당신이 가진 것의 가장 선명한 그림입니다.
+        </p>
+        <p>
+          그 지도로 무엇을 할지는 전적으로 당신의 선택입니다.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <section id="services" class="section">
+    <div class="reveal">
+      <p class="section-label">Services</p>
+      <h2 class="section-title">4가지 서비스</h2>
+      <p class="section-body">
+        각기 다른 상황에 있는 분들을 위한 PotenMap의 서비스입니다.
+        어떤 서비스든 핵심은 같습니다 — 당신 안에 있는 것을 보이게 하는 것.
+      </p>
+    </div>
+
+    <div class="services-grid reveal">
+
+      <div class="service-card">
+        <div class="service-num">01 / 04</div>
+        <div class="service-target">직장인 · 이직 / 퇴사 고민</div>
+        <div class="service-name">커리어 코칭</div>
+        <div class="service-desc">
+          10년을 일했는데 내가 뭘 잘하는지 모르겠다면,
+          이직해야 할지 남아야 할지 결정이 안 선다면,
+          지금 느끼는 불일치감이 무엇 때문인지 모르겠다면 —
+          먼저 당신의 커리어 지도를 그려보세요.
+          조언이 아니라 선명한 그림이 먼저입니다.
+        </div>
+        <div class="service-price">₩ 150,000 ~ 200,000</div>
+      </div>
+
+      <div class="service-card">
+        <div class="service-num">02 / 04</div>
+        <div class="service-target">프리랜서 · 1인 기업</div>
+        <div class="service-name">퍼스널 브랜딩 코칭</div>
+        <div class="service-desc">
+          실력은 있는데 매출이 정체되어 있다면,
+          나를 어떻게 설명해야 할지 모르겠다면,
+          포지셔닝이 왜 안 먹히는지 모르겠다면 —
+          먼저 당신만이 가진 구조적 차별점을 찾아야 합니다.
+          마케팅보다 자기 인식이 먼저입니다.
+        </div>
+        <div class="service-price">₩ 400,000</div>
+      </div>
+
+      <div class="service-card">
+        <div class="service-num">03 / 04</div>
+        <div class="service-target">예비창업자</div>
+        <div class="service-name">창업 코칭</div>
+        <div class="service-desc">
+          아이디어는 있는데 내가 이걸 잘할 수 있을지 모르겠다면,
+          창업 준비는 하고 있는데 방향이 나인지 확신이 없다면 —
+          전략보다 자기 이해가 먼저입니다.
+          어떤 구조의 사람이 어떤 사업에서 빛나는지,
+          당신의 창업 지도를 먼저 그려보세요.
+        </div>
+        <div class="service-price">₩ 800,000</div>
+      </div>
+
+      <div class="service-card">
+        <div class="service-num">04 / 04</div>
+        <div class="service-target">소규모 대표 · 1~10인 기업</div>
+        <div class="service-name">비즈니스 코칭</div>
+        <div class="service-desc">
+          사업은 돌아가는데 성장이 안 된다면,
+          모든 걸 혼자 하고 있는데 뭘 넘겨야 할지 모른다면,
+          의사결정이 왜 이렇게 힘든지 모르겠다면 —
+          대표 자신의 강점 구조를 먼저 파악해야 합니다.
+          사업의 천장은 대부분 대표의 자기 인식에서 결정됩니다.
+        </div>
+        <div class="service-price">₩ 2,000,000 ~ 3,000,000</div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- HOW IT WORKS -->
+  <section id="how" class="section">
+    <div class="reveal">
+      <p class="section-label">How It Works</p>
+      <h2 class="section-title">진행 방식</h2>
+      <p class="section-body">
+        설문지가 아닙니다. 알고리즘도 아닙니다.
+        당신의 실제 경험에서 시작하여 구조를 쌓아 올라가는 방식입니다.
+      </p>
+    </div>
+
+    <div class="process-steps reveal">
+      <div class="process-step">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <div class="step-title">원재료 수집 — 당신의 실제 경험</div>
+          <div class="step-desc">
+            일반적인 질문이 아닌, 당신이 지금까지 살아온 구체적인 경험을 탐색합니다.
+            가장 잘 됐던 순간, 가장 생동감 있었던 순간, 반복적으로 칭찬받았던 것들.
+            대부분의 사람들이 이 정보를 가지고 있지만 구조화한 적이 없습니다.
+          </div>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <div class="step-title">패턴 발견 — 반복되는 것들을 찾아냅니다</div>
+          <div class="step-desc">
+            경험들 사이에서 반복되는 사고 방식, 행동 방식, 반응 패턴을 찾아냅니다.
+            당신이 의식하지 못하고 자연스럽게 해온 것들이
+            실제로 당신의 가장 강력한 강점인 경우가 많습니다.
+          </div>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <div class="step-title">구조화 — 층층이 쌓아 올립니다</div>
+          <div class="step-desc">
+            발견된 패턴들을 구조화합니다. 어떤 영역에서 자연스럽게 탁월한지,
+            어떤 방식으로 일할 때 에너지가 생기는지,
+            어떤 환경에서 진짜 실력이 발휘되는지를 체계적으로 정리합니다.
+          </div>
+        </div>
+      </div>
+      <div class="process-step">
+        <div class="step-num">04</div>
+        <div class="step-content">
+          <div class="step-title">지도 완성 — 당신만의 블루프린트</div>
+          <div class="step-desc">
+            최종 결과물은 당신만의 구조화된 지도입니다.
+            조언이 없습니다. 방향 제시가 없습니다. 우리의 해석이 아닌
+            당신이 가진 것의 가장 선명하고 정직한 그림입니다.
+            이 지도로 무엇을 할지는 전적으로 당신의 선택입니다.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NOT THIS -->
+  <div class="not-section">
+    <div class="not-inner reveal">
+      <p class="section-label">Important Notice</p>
+      <h2 class="section-title">PotenMap이 하지 않는 것</h2>
+      <p class="section-body">
+        명확한 것이 중요합니다. PotenMap이 제공하지 않는 것들을 솔직하게 말씀드립니다.
+      </p>
+
+      <div class="not-grid">
+        <div class="not-item">
+          <div class="not-icon">✕</div>
+          <div class="not-title">조언을 드리지 않습니다</div>
+          <div class="not-desc">무엇을 해야 한다고 말하지 않습니다. 어떤 선택을 내리도록 유도하지 않습니다. 모든 결정은 전적으로 당신의 것입니다.</div>
+        </div>
+        <div class="not-item">
+          <div class="not-icon">✕</div>
+          <div class="not-title">결정을 대신하지 않습니다</div>
+          <div class="not-desc">이직할지, 창업할지, 사업을 어떻게 바꿀지 — 이런 결정을 내려드리지 않습니다. 그것은 지도를 가진 당신이 해야 할 일입니다.</div>
+        </div>
+        <div class="not-item">
+          <div class="not-icon">✕</div>
+          <div class="not-title">심리상담이 아닙니다</div>
+          <div class="not-desc">정신건강 전문 서비스가 아닙니다. 심각한 심리적 어려움이 있으신 분은 반드시 전문 상담사를 찾아주세요.</div>
+        </div>
+        <div class="not-item">
+          <div class="not-icon">✕</div>
+          <div class="not-title">투자·법률·재무 조언이 아닙니다</div>
+          <div class="not-desc">사업 투자 결정, 법률적 판단, 재무 계획에 활용하시면 안 됩니다. 해당 분야 전문가를 반드시 별도로 찾아주세요.</div>
+        </div>
+        <div class="not-item">
+          <div class="not-icon">✕</div>
+          <div class="not-title">취업 알선이 아닙니다</div>
+          <div class="not-desc">이력서 검토, 채용 연계, 면접 코칭을 제공하지 않습니다. 취업 자체가 아닌, 당신이 무엇을 가진 사람인지에 집중합니다.</div>
+        </div>
+        <div class="not-item">
+          <div class="not-icon">✕</div>
+          <div class="not-title">비즈니스 컨설팅이 아닙니다</div>
+          <div class="not-desc">사업 전략 수립, 시장 조사, 사업 계획서 작성을 제공하지 않습니다. 전략보다 사람이 먼저입니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRINITY / ABOUT -->
+  <div class="trinity-section" id="about">
+    <div class="trinity-inner reveal">
+      <p class="section-label">Founder · Background</p>
+      <h2 class="section-title">왜 PotenMap인가</h2>
+      <p class="section-body">
+        PotenMap은 선물 트레이더 출신이 만들었습니다.
+        S&P 500, 원유, 미국 국채 선물 50개월의 경험 이후,
+        프로그래밍 배경 없이 AI 시스템을 직접 구축했습니다.
+      </p>
+      <p class="section-body" style="margin-top: 1rem;">
+        2024년 12월 완성된 Trinity System은 기존에 20-25명의 전문가가
+        1주일 걸려 하던 작업을 7시간, 단 $18.42로 처리했습니다.
+        그 방법론 — 구조를 바텀업으로 쌓아 보이지 않던 것을 보이게 만드는 것 —
+        이 PotenMap의 핵심입니다. 대상이 정책 문서냐, 사람이냐의 차이일 뿐입니다.
+      </p>
+
+      <div class="trinity-stat">
+        <div class="trinity-stat-item">
+          <span class="stat-num">5,755</span>
+          <span class="stat-label">검토 문서 수</span>
+        </div>
+        <div class="trinity-stat-item">
+          <span class="stat-num">$18.42</span>
+          <span class="stat-label">총 비용 (기존 $75,000)</span>
+        </div>
+        <div class="trinity-stat-item">
+          <span class="stat-num">7H</span>
+          <span class="stat-label">소요 시간 (기존 1주일)</span>
+        </div>
+        <div class="trinity-stat-item">
+          <span class="stat-num">3,257x</span>
+          <span class="stat-label">비용 절감</span>
+        </div>
+      </div>
+
+      <p class="trinity-note">
+        * Trinity System — US-China Semiconductor Tariff Policy, Jan 2026 Execution
+      </p>
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <section id="contact" class="section" style="max-width: 100%; padding: 0;">
+    <div class="contact-inner">
+      <div class="reveal">
+        <p class="section-label">Contact</p>
+        <h2 class="section-title">문의하기</h2>
+        <p class="section-body" style="margin-bottom: 2rem;">
+          어떤 서비스가 맞는지 확실하지 않으셔도 됩니다.
+          지금 어떤 상황인지 말씀해주시면 함께 살펴보겠습니다.
+        </p>
+
+        <div class="contact-detail">
+          <div class="contact-detail-label">Email</div>
+          <div class="contact-detail-value">
+            <a href="mailto:potenmap@naver.com">potenmap@naver.com</a>
+          </div>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-detail-label">Phone</div>
+          <div class="contact-detail-value">0504-4645-5360</div>
+        </div>
+        <div class="contact-detail">
+          <div class="contact-detail-label">Response</div>
+          <div class="contact-detail-value">영업일 기준 1-2일 내 답변드립니다</div>
+        </div>
+
+        <div class="notice-box">
+          <div class="notice-title">⚠ 이런 분은 문의하지 마세요</div>
+          <div class="notice-text">
+            투자·사업·법률·재무 결정에 직접 활용하려는 분 /
+            전문가 조언을 대체하려는 분 /
+            확실한 정답을 원하시는 분 —
+            저희 서비스는 지도를 그려드릴 뿐, 그 이상을 제공하지 않습니다.
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal">
+        <form class="contact-form" onsubmit="handleSubmit(event)">
+          <div class="form-row">
+            <label class="form-label">이름</label>
+            <input class="form-input" type="text" placeholder="홍길동" required />
+          </div>
+          <div class="form-row">
+            <label class="form-label">이메일</label>
+            <input class="form-input" type="email" placeholder="your@email.com" required />
+          </div>
+          <div class="form-row">
+            <label class="form-label">관심 서비스</label>
+            <select class="form-select form-input">
+              <option value="">선택해주세요</option>
+              <option>커리어 코칭 (이직·퇴사 고민 직장인)</option>
+              <option>퍼스널 브랜딩 코칭 (프리랜서·1인기업)</option>
+              <option>창업 코칭 (예비창업자)</option>
+              <option>비즈니스 코칭 (소규모 대표)</option>
+              <option>잘 모르겠어요</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label class="form-label">현재 상황 및 문의 내용</label>
+            <textarea class="form-textarea" placeholder="지금 어떤 상황인지 간단히 말씀해주세요. 어떤 서비스가 맞는지 모르셔도 괜찮습니다." required></textarea>
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%; cursor: pointer; border: none; font-size: 0.9rem;">
+            문의 보내기 →
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">PotenMap</div>
+    <div class="footer-info">
+      사업자등록번호: 860-01-03895 &nbsp;|&nbsp; 통신판매업신고: 미해당<br>
+      대표자: 김태후 &nbsp;|&nbsp; 대표전화: 0504-4645-5360<br>
+      이메일: potenmap@naver.com<br>
+      사업장 주소: 경기도 김포시 김포한강9로 79, 401-J797, 4층<br>
+      © 2025 PotenMap. All rights reserved.
+    </div>
+  </footer>
+
+  <script>
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => observer.observe(el));
+
+    // Form submit
+    function handleSubmit(e) {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      btn.textContent = '전송 완료! 빠르게 답변드리겠습니다 ✓';
+      btn.style.background = '#2a3a1a';
+      btn.style.color = '#7ab84a';
+      btn.disabled = true;
+    }
+  </script>
+
+</body>
+</html>
