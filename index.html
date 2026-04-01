@@ -17,8 +17,8 @@
       --accent: #c9a84c;
       --accent2: #e8c97a;
       --text: #e8e6df;
-      --text-muted: #7a7870;
-      --text-dim: #4a4840;
+      --text-muted: #b8b4ac;
+      --text-dim: #8a8478;
       --border: rgba(201,168,76,0.15);
       --border-dim: rgba(255,255,255,0.05);
     }
@@ -220,7 +220,7 @@
 
     .section-label {
       font-family: 'DM Mono', monospace;
-      font-size: 0.68rem;
+      font-size: 0.85rem;
       letter-spacing: 0.3em;
       color: var(--accent);
       text-transform: uppercase;
@@ -237,10 +237,10 @@
     }
 
     .section-body {
-      font-size: 0.95rem;
+      font-size: 1.05rem;
       color: var(--text-muted);
       max-width: 620px;
-      line-height: 1.9;
+      line-height: 2;
     }
 
     /* DIVIDER LINE */
@@ -343,15 +343,15 @@
     }
 
     .service-desc {
-      font-size: 0.85rem;
+      font-size: 1rem;
       color: var(--text-muted);
-      line-height: 1.85;
+      line-height: 1.9;
       margin-bottom: 1.5rem;
     }
 
     .service-price {
       font-family: 'DM Mono', monospace;
-      font-size: 0.8rem;
+      font-size: 0.95rem;
       color: var(--accent);
       letter-spacing: 0.08em;
     }
@@ -387,16 +387,16 @@
     }
 
     .not-title {
-      font-size: 0.88rem;
+      font-size: 1rem;
       font-weight: 500;
       color: var(--text);
       margin-bottom: 0.5rem;
     }
 
     .not-desc {
-      font-size: 0.8rem;
+      font-size: 0.95rem;
       color: var(--text-muted);
-      line-height: 1.8;
+      line-height: 1.85;
     }
 
     /* PROCESS */
@@ -437,16 +437,16 @@
     }
 
     .step-title {
-      font-size: 0.95rem;
+      font-size: 1.05rem;
       font-weight: 500;
       color: var(--text);
       margin-bottom: 0.4rem;
     }
 
     .step-desc {
-      font-size: 0.83rem;
+      font-size: 0.98rem;
       color: var(--text-muted);
-      line-height: 1.8;
+      line-height: 1.85;
     }
 
     /* TRINITY */
@@ -486,7 +486,7 @@
     }
 
     .stat-label {
-      font-size: 0.75rem;
+      font-size: 0.9rem;
       color: var(--text-muted);
       letter-spacing: 0.1em;
       margin-top: 0.3rem;
@@ -495,8 +495,8 @@
     .trinity-note {
       margin-top: 2rem;
       font-family: 'DM Mono', monospace;
-      font-size: 0.75rem;
-      color: var(--text-dim);
+      font-size: 0.85rem;
+      color: var(--text-muted);
       text-align: center;
       letter-spacing: 0.08em;
     }
@@ -949,89 +949,23 @@
     </div>
   </div>
 
-  <!-- CONTACT -->
-  <section id="contact" class="section" style="max-width: 100%; padding: 0;">
-    <div class="contact-inner">
-      <div class="reveal">
-        <p class="section-label">Contact</p>
-        <h2 class="section-title">문의하기</h2>
-        <p class="section-body" style="margin-bottom: 2rem;">
-          어떤 서비스가 맞는지 확실하지 않으셔도 됩니다.
-          지금 어떤 상황인지 말씀해주시면 함께 살펴보겠습니다.
-        </p>
-
-        <div class="contact-detail">
-          <div class="contact-detail-label">Email</div>
-          <div class="contact-detail-value">
-            <a href="mailto:potenmap@naver.com">potenmap@naver.com</a>
-          </div>
-        </div>
-        <div class="contact-detail">
-          <div class="contact-detail-label">Phone</div>
-          <div class="contact-detail-value">0504-4645-5360</div>
-        </div>
-        <div class="contact-detail">
-          <div class="contact-detail-label">Response</div>
-          <div class="contact-detail-value">영업일 기준 1-2일 내 답변드립니다</div>
-        </div>
-
-        <div class="notice-box">
-          <div class="notice-title">⚠ 이런 분은 문의하지 마세요</div>
-          <div class="notice-text">
-            투자·사업·법률·재무 결정에 직접 활용하려는 분 /
-            전문가 조언을 대체하려는 분 /
-            확실한 정답을 원하시는 분 —
-            저희 서비스는 지도를 그려드릴 뿐, 그 이상을 제공하지 않습니다.
-          </div>
-        </div>
-      </div>
-
-      <div class="reveal">
-        <form class="contact-form" onsubmit="handleSubmit(event)">
-          <div class="form-row">
-            <label class="form-label">이름</label>
-            <input class="form-input" type="text" placeholder="홍길동" required />
-          </div>
-          <div class="form-row">
-            <label class="form-label">이메일</label>
-            <input class="form-input" type="email" placeholder="your@email.com" required />
-          </div>
-          <div class="form-row">
-            <label class="form-label">관심 서비스</label>
-            <select class="form-select form-input">
-              <option value="">선택해주세요</option>
-              <option>커리어 코칭 (이직·퇴사 고민 직장인)</option>
-              <option>퍼스널 브랜딩 코칭 (프리랜서·1인기업)</option>
-              <option>창업 코칭 (예비창업자)</option>
-              <option>비즈니스 코칭 (소규모 대표)</option>
-              <option>잘 모르겠어요</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <label class="form-label">현재 상황 및 문의 내용</label>
-            <textarea class="form-textarea" placeholder="지금 어떤 상황인지 간단히 말씀해주세요. 어떤 서비스가 맞는지 모르셔도 괜찮습니다." required></textarea>
-          </div>
-          <button type="submit" class="btn-primary" style="width: 100%; cursor: pointer; border: none; font-size: 0.9rem;">
-            문의 보내기 →
-          </button>
-        </form>
-      </div>
+  <!-- BUSINESS INFO -->
+  <div style="border-top: 1px solid var(--border-dim); border-bottom: 1px solid var(--border-dim); background: var(--bg2);">
+    <div style="max-width: 1100px; margin: 0 auto; padding: 3rem 4rem; text-align: center;">
+      <p style="font-family: 'DM Mono', monospace; font-size: 0.85rem; color: var(--text-muted); line-height: 2.4; letter-spacing: 0.04em;">
+        사업자등록번호: 860-01-03895 &nbsp;|&nbsp; 통신판매업신고: 미해당 &nbsp;|&nbsp; 대표자: 김태후<br>
+        대표전화: 0504-4645-5360 &nbsp;|&nbsp; 이메일: potenmap@naver.com<br>
+        사업장 주소: 경기도 김포시 김포한강9로 79, 401-J797, 4층
+      </p>
     </div>
-  </section>
+  </div>
 
   <!-- FOOTER -->
-  <footer>
-    <div class="footer-logo">PotenMap</div>
-    <div class="footer-info">
-      사업자등록번호: 860-01-03895 &nbsp;|&nbsp; 통신판매업신고: 미해당<br>
-      대표자: 김태후 &nbsp;|&nbsp; 대표전화: 0504-4645-5360<br>
-      이메일: potenmap@naver.com<br>
-      사업장 주소: 경기도 김포시 김포한강9로 79, 401-J797, 4층<br>
-      © 2025 PotenMap. All rights reserved.
-    </div>
+  <footer style="justify-content: center;">
+    <div class="footer-logo">© 2025 PotenMap. All rights reserved.</div>
   </footer>
 
-  <script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     // Scroll reveal
     const reveals = document.querySelectorAll('.reveal');
     const observer = new IntersectionObserver((entries) => {
@@ -1042,17 +976,3 @@
       });
     }, { threshold: 0.1 });
     reveals.forEach(el => observer.observe(el));
-
-    // Form submit
-    function handleSubmit(e) {
-      e.preventDefault();
-      const btn = e.target.querySelector('button[type="submit"]');
-      btn.textContent = '전송 완료! 빠르게 답변드리겠습니다 ✓';
-      btn.style.background = '#2a3a1a';
-      btn.style.color = '#7ab84a';
-      btn.disabled = true;
-    }
-  </script>
-
-</body>
-</html>
