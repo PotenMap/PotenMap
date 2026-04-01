@@ -179,11 +179,16 @@ Future expansion is planned for the United States and Japan. The methodology is 
 For inquiries, collaborations, or session bookings, please reach out directly.
 
 **Brand:** PotenMap
+
 **Founder Title:** Human Architect | Founder, PotenMap
+
 **Industry:** Personal Development
+
 **Email:** potenmap@naver.com
+
 **LinkedIn:** https://www.linkedin.com/in/potenmap/
-**Web:** https://potenmap.com
+
+**Web:** https://potenmap.github.io/PotenMap/
 
 ---
 
